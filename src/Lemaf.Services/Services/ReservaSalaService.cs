@@ -26,11 +26,15 @@ namespace Lemaf.Services.Services
         public async Task<string> ReservarSalas(string[] entradaDados)
         {
             CarregarSalas();
-            HistoricoReserva = new HistoricoReserva();
+            HistoricoReserva = new HistoricoReserva()
+            {
+                InformacoesReservas = new List<string>(),
+                Reservas = new List<Reserva>()
+            };
 
             foreach (var item in entradaDados)
             {
-                await EfetuarReservaAsync(item.Split());
+                await EfetuarReservaAsync(item.Split(";"));
             }
 
             return JsonConvert.SerializeObject(HistoricoReserva);
@@ -71,7 +75,8 @@ namespace Lemaf.Services.Services
             {
                 DataInicio = DateTime.Parse(string.Concat(dados[0], " ", dados[1])),
                 DataFim = DateTime.Parse(string.Concat(dados[2], " ", dados[3])),
-                QuantidadePessoas = Convert.ToInt32(dados[4])
+                QuantidadePessoas = Convert.ToInt32(dados[4]),
+                Sala = new Sala()
             };
 
             bool possuiInternet = dados[5].Equals("Sim") ? true : false;
@@ -97,12 +102,11 @@ namespace Lemaf.Services.Services
                 s.PossuiInternet.Equals(possuiInternet) &&
                 s.PossuiTvWebcam.Equals(possuiTvWebcam)).ToList();
 
-            var salaDisponivel = new Sala();
-
             foreach (var sala in salasAtendem)
             {
-                reserva.Sala = sala;
-                if (!HistoricoReserva.Reservas.Contains(reserva))
+                if (HistoricoReserva.Reservas == null)
+                    return sala;
+                else if (!HistoricoReserva.Reservas.Contains(reserva))
                     return sala;
             }
 
