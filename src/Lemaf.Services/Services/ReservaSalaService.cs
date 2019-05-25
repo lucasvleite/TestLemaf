@@ -9,23 +9,15 @@ using System.Threading.Tasks;
 
 namespace Lemaf.Services.Services
 {
-    public class ReservaSalaService : IReservaSalaService
+    public class ReservaService : IReservaService
     {
-        private readonly IReservaSalaService _service;
-        private static ReservaValidator validatorReserva = new ReservaValidator();
+        private static ReservaValidator validator = new ReservaValidator();
 
-        private List<Sala> Salas { get; set; }
         private HistoricoReserva HistoricoReserva { get; set; }
-
-        public ReservaSalaService(IReservaSalaService service)
-        {
-            _service = service;
-        }
-
+        
 
         public async Task<string> ReservarSalas(string[] entradaDados)
         {
-            CarregarSalas();
             HistoricoReserva = new HistoricoReserva()
             {
                 InformacoesReservas = new List<string>(),
@@ -40,35 +32,6 @@ namespace Lemaf.Services.Services
             return JsonConvert.SerializeObject(HistoricoReserva);
         }
 
-        private void CarregarSalas()
-        {
-            Salas = new List<Sala>();
-            for (int i = 1; i <= 5; i++)
-            {
-                NovaSala(i, 10, true, true, true);
-            }
-
-            NovaSala(6, 10, false, true, false);
-            NovaSala(7, 10, false, true, false);
-
-            NovaSala(8, 3, true, true, true);
-            NovaSala(9, 3, true, true, true);
-            NovaSala(10, 3, true, true, true);
-
-            NovaSala(11, 20, false, false, false);
-            NovaSala(12, 20, false, false, false);
-        }
-
-        private void NovaSala(int codigoSala, int capacidade, bool possuiComputador, bool possuiInternet, bool possuiTvWebcam) =>
-            Salas.Add(new Sala
-            {
-                CodigoSala = codigoSala,
-                Capacidade = capacidade,
-                PossuiComputador = possuiComputador,
-                PossuiInternet = possuiInternet,
-                PossuiTvWebcam = possuiTvWebcam
-            });
-
         private async Task EfetuarReservaAsync(string[] dados)
         {
             Reserva tentativaReserva = new Reserva
@@ -79,28 +42,28 @@ namespace Lemaf.Services.Services
                 Sala = new Sala()
             };
 
-            bool possuiInternet = dados[5].Equals("Sim") ? true : false;
-            bool possuiTvWebcam = dados[6].Equals("Sim") ? true : false;
+            tentativaReserva.Sala = VerificarSalaDisponivel(
+                tentativaReserva,
+                dados[5].Equals("Sim") ? true : false,
+                dados[6].Equals("Sim") ? true : false);
 
-            var salaDisponivel = VerificarSalaDisponivel(tentativaReserva, possuiInternet, possuiTvWebcam);
-
-            tentativaReserva.Sala = salaDisponivel;
-
-            var validador = await validatorReserva.ValidateAsync(tentativaReserva);
-
+            var validador = await validator.ValidateAsync(tentativaReserva);
             string informacoesReserva = (validador.IsValid) ?
                 "ok" : string.Concat(validador.Errors.Select(x => x.ErrorMessage).ToList());
 
-            HistoricoReserva.Reservas.Add(tentativaReserva);
+            AdicionarHistoricoReserva(informacoesReserva, tentativaReserva);
+        }
+
+        private void AdicionarHistoricoReserva(string informacoesReserva, Reserva tentativaReserva)
+        {
             HistoricoReserva.InformacoesReservas.Add(informacoesReserva);
+            HistoricoReserva.Reservas.Add(tentativaReserva);
         }
 
         private Sala VerificarSalaDisponivel(Reserva reserva, bool possuiInternet, bool possuiTvWebcam)
         {
-            var salasAtendem = Salas.Where(s =>
-                s.Capacidade >= reserva.QuantidadePessoas.Value &&
-                s.PossuiInternet.Equals(possuiInternet) &&
-                s.PossuiTvWebcam.Equals(possuiTvWebcam)).ToList();
+            var salasAtendem = new SalaService().
+                VerificarSalasAtendemNecessidade(reserva.QuantidadePessoas.Value, possuiInternet, possuiTvWebcam);
 
             foreach (var sala in salasAtendem)
             {

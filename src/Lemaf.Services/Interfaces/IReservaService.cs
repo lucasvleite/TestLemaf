@@ -2,7 +2,7 @@
 
 namespace Lemaf.Services.Interfaces
 {
-    public interface IReservaSalaService
+    public interface IReservaService
     {
         Task<string> ReservarSalas(string[] entradaDados);
     }

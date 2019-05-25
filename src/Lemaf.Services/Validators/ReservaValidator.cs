@@ -22,8 +22,10 @@ namespace Lemaf.Services.Validators
                     .Equals(DayOfWeek.Friday))
                 .WithMessage(Resources.ErroDiaUtil);
 
+            RuleFor(e => e.DataFim)
+                .NotEmpty().WithMessage(Resources.ErroDataFinal);
+
             RuleFor(e => e.DataFim.Subtract(e.DataInicio))
-                .NotEmpty().WithMessage(Resources.ErroDataFinal)
                 .LessThanOrEqualTo(new TimeSpan(8, 0, 0))
                 .WithMessage(Resources.ErroDuracao);
 
