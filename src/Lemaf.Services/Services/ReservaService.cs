@@ -62,18 +62,28 @@ namespace Lemaf.Services.Services
 
         private Sala VerificarSalaDisponivel(Reserva reserva, bool possuiInternet, bool possuiTvWebcam)
         {
+            var copiaReserva = reserva;
             var salasAtendem = new SalaService().
-                VerificarSalasAtendemNecessidade(reserva.QuantidadePessoas.Value, possuiInternet, possuiTvWebcam);
+                VerificarSalasAtendemNecessidade(copiaReserva.QuantidadePessoas.Value, possuiInternet, possuiTvWebcam);
 
             foreach (var sala in salasAtendem)
             {
+                copiaReserva.Sala = sala;
                 if (HistoricoReserva.Reservas == null)
                     return sala;
-                else if (!HistoricoReserva.Reservas.Contains(reserva))
+                else if (!HistoricoReserva.Reservas.Contains(copiaReserva))
                     return sala;
             }
-
             return null;
         }
+
+        private static Reserva NovaReserva(DateTime dataInicio, DateTime dataFinal, int quantidadePessoas, Sala sala) =>
+            new Reserva
+            {
+                DataInicio = dataInicio,
+                DataFim = dataFinal,
+                QuantidadePessoas = quantidadePessoas,
+                Sala = sala
+            };
     }
 }

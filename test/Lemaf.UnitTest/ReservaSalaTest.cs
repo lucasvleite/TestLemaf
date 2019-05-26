@@ -20,11 +20,19 @@ namespace Lemaf.UnitTest
         }
 
         [Fact]
-        public async Task Quando_Todas_Reservas_Devem_Retornar_SucessoAsync()
+        public async Task Quando_Todas_Reservas_Do_Exemplo_Devem_Retornar_Sucesso()
         {
-            var aux = ReservaSalaSucessoFaker.DataAleatoriaCorreta;
             string resposta = await _service.ReservarSalas(ReservaSalaSucessoFaker.EntradaDadosExemploDaAvaliacao);
             var resultado = ReservaSalaSucessoFaker.GetFakerExemploDaAvaliacao();
+
+            resposta.Equals(JsonConvert.SerializeObject(resultado));
+        }
+
+        [Fact]
+        public async Task Quando_Todas_Reservas_Devem_Retornar_Sucesso()
+        {
+            string resposta = await _service.ReservarSalas(ReservaSalaSucessoFaker.EntradaDadosSucesso);
+            var resultado = ReservaSalaSucessoFaker.GetFakerSucesso(ReservaSalaSucessoFaker.EntradaDadosSucesso);
 
             resposta.Equals(JsonConvert.SerializeObject(resultado));
         }

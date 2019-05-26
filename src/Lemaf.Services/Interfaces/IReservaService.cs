@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Lemaf.Entities;
 
 namespace Lemaf.Services.Interfaces
 {
