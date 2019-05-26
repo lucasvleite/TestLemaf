@@ -3,6 +3,26 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    @using (Html.BeginForm("InputFile", "Home", FormMethod.Post, new { id = "formInput", @class = "md-form" }))
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <br /><br /><br />
+                <div class="form-group">
+                    <div class="btn btn-lg bg-light">
+                        <input type="file" class="form-control-file text-black-50" id="inputFile" lang="pt-br">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="form-group">
+                    <div class="btn btn-group-lg">
+                        <input type="submit" class="btn btn-success" id="Enviar" value="Enviar Arquivo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>

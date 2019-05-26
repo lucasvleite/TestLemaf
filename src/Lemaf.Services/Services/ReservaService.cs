@@ -12,46 +12,77 @@ namespace Lemaf.Services.Services
     public class ReservaService : IReservaService
     {
         private static ReservaValidator validator = new ReservaValidator();
+        private const string Ok = "ok";
+        private const string Sim = "Sim";
 
-        private HistoricoReserva HistoricoReserva { get; set; }
-        
-
-        public async Task<string> ReservarSalas(string[] entradaDados)
-        {
-            HistoricoReserva = new HistoricoReserva()
+        private static HistoricoReserva HistoricoReserva =
+            new HistoricoReserva()
             {
                 InformacoesReservas = new List<string>(),
                 Reservas = new List<Reserva>()
             };
 
-            foreach (var item in entradaDados)
+        public async Task<string> ReservarSalas(string[] entradaDados)
+        {
+            foreach (string item in entradaDados)
             {
-                await EfetuarReservaAsync(item.Split(";"));
+                string verificador = VerificarDados(item);
+
+                if (verificador.Equals(Ok))
+                    await EfetuarReservaAsync(item.Split(";"));
+                else
+                    AdicionarHistoricoReserva(verificador, null);
             }
 
             return JsonConvert.SerializeObject(HistoricoReserva);
         }
+
+        private string VerificarDados(string entrada)
+        {
+            string[] dados = entrada.Split(";");
+            try
+            {
+                DateTime dataInicio = DateTime.Parse(string.Concat(dados[0], " ", dados[1]));
+                DateTime dataFinal = DateTime.Parse(string.Concat(dados[2], " ", dados[3]));
+                int quantidadePessoas = Convert.ToInt32(dados[4]);
+                bool internet = dados[5].Equals(Sim) ? true : false;
+                bool tvWebcam = dados[6].Equals(Sim) ? true : false;
+            } catch(Exception ex)
+            {
+                return ex.Message;
+            }
+            
+            return Ok;
+        }
+
 
         private async Task EfetuarReservaAsync(string[] dados)
         {
             Reserva tentativaReserva = new Reserva
             {
                 DataInicio = DateTime.Parse(string.Concat(dados[0], " ", dados[1])),
-                DataFim = DateTime.Parse(string.Concat(dados[2], " ", dados[3])),
+                DataFinal = DateTime.Parse(string.Concat(dados[2], " ", dados[3])),
                 QuantidadePessoas = Convert.ToInt32(dados[4]),
-                Sala = new Sala()
+                Sala = null
             };
 
-            tentativaReserva.Sala = VerificarSalaDisponivel(
-                tentativaReserva,
-                dados[5].Equals("Sim") ? true : false,
-                dados[6].Equals("Sim") ? true : false);
+            string informacoesReserva = await VerificarRegras(tentativaReserva);
 
-            var validador = await validator.ValidateAsync(tentativaReserva);
-            string informacoesReserva = (validador.IsValid) ?
-                "ok" : string.Concat(validador.Errors.Select(x => x.ErrorMessage).ToList());
-
-            AdicionarHistoricoReserva(informacoesReserva, tentativaReserva);
+            if(informacoesReserva == Ok){
+                tentativaReserva.Sala = VerificarSalaDisponivel(
+                    tentativaReserva,
+                    dados[5].Equals(Sim) ? true : false,
+                    dados[6].Equals(Sim) ? true : false);
+                
+                if(tentativaReserva.Sala == null)
+                    AdicionarHistoricoReserva(informacoesReserva, null);
+                else
+                    AdicionarHistoricoReserva(informacoesReserva, tentativaReserva);
+            }
+            else
+            {
+                AdicionarHistoricoReserva(informacoesReserva, null);
+            }
         }
 
         private void AdicionarHistoricoReserva(string informacoesReserva, Reserva tentativaReserva)
@@ -64,24 +95,45 @@ namespace Lemaf.Services.Services
         {
             var copiaReserva = reserva;
             var salasAtendem = new SalaService().
-                VerificarSalasAtendemNecessidade(copiaReserva.QuantidadePessoas.Value, possuiInternet, possuiTvWebcam);
+                VerificarSalasAtendemNecessidade(copiaReserva.QuantidadePessoas, possuiInternet, possuiTvWebcam);
 
             foreach (var sala in salasAtendem)
             {
                 copiaReserva.Sala = sala;
-                if (HistoricoReserva.Reservas == null)
-                    return sala;
-                else if (!HistoricoReserva.Reservas.Contains(copiaReserva))
+                 if ( !ConflitoHorario(copiaReserva) )
                     return sala;
             }
             return null;
+        }
+
+        //TODO: Arrumar erros - verificar tres outras salas.
+        private async Task<string> VerificarRegras(Reserva reserva)
+        {
+            var validador = await validator.ValidateAsync(reserva);
+
+            if(!validador.IsValid)
+            {
+                var erro = string.Concat(validador.Errors.Select(x => x.ErrorMessage).ToList());
+                return erro;
+            }
+            
+            return Ok;
+        }
+
+        private bool ConflitoHorario(Reserva reserva)
+        {
+            var verificador = HistoricoReserva.Reservas
+                .Where(x => x.Sala.CodigoSala == reserva.Sala.CodigoSala & (x.DataInicio > reserva.DataFinal | reserva.DataInicio > x.DataFinal)
+            ).ToList();
+
+            return (verificador.Count.Equals(0)) ? false : true;
         }
 
         private static Reserva NovaReserva(DateTime dataInicio, DateTime dataFinal, int quantidadePessoas, Sala sala) =>
             new Reserva
             {
                 DataInicio = dataInicio,
-                DataFim = dataFinal,
+                DataFinal = dataFinal,
                 QuantidadePessoas = quantidadePessoas,
                 Sala = sala
             };

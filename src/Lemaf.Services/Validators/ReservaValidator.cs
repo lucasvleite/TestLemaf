@@ -11,7 +11,7 @@ namespace Lemaf.Services.Validators
         {
             RuleFor(e => e.DataInicio.Date)
                 .NotEmpty().WithMessage(Resources.ErroDataInicio)
-                .LessThan(e => e.DataFim).WithMessage(Resources.ErroDataInicioMaiorQueFinal)
+                .LessThan(e => e.DataFinal).WithMessage(Resources.ErroDataInicioMaiorQueFinal)
                 .GreaterThanOrEqualTo(DateTime.Now.AddDays(1)).WithMessage(Resources.ErroMinimoUmDiaAntecedencia)
                 .LessThanOrEqualTo(DateTime.Now.AddDays(40)).WithMessage(Resources.ErroMaximoQuarentaDiasAntecedencia)
                 .When(x => x.DataInicio.DayOfWeek
@@ -22,16 +22,18 @@ namespace Lemaf.Services.Validators
                     .Equals(DayOfWeek.Friday))
                 .WithMessage(Resources.ErroDiaUtil);
 
-            RuleFor(e => e.DataFim)
+            RuleFor(e => e.DataFinal)
+                .GreaterThan(e => e.DataInicio).WithMessage(Resources.ErroDataInicioMaiorQueFinal)
                 .NotEmpty().WithMessage(Resources.ErroDataFinal);
 
-            RuleFor(e => e.DataFim.Subtract(e.DataInicio))
+            RuleFor(e => e.DataFinal.Subtract(e.DataInicio))
                 .LessThanOrEqualTo(new TimeSpan(8, 0, 0))
                 .WithMessage(Resources.ErroDuracao);
 
-            RuleFor(e => e.Sala)
-                .NotEmpty()
-                .WithMessage(Resources.ErroSala);
+            RuleFor(e => e.QuantidadePessoas)
+                .LessThanOrEqualTo(20).WithMessage(Resources.ErroQuantidadePessoasInsuficiente)
+                .GreaterThanOrEqualTo(1).WithMessage(Resources.ErroQuantidadePessoasMaisQueSuficiente)
+                .NotEmpty().WithMessage(Resources.ErroQuantidadePessoas);
         }
     }
 }

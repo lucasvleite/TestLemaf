@@ -4,11 +4,14 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using Lemaf.Services.Services;
+using System.Linq;
 
 namespace Lemaf.UnitTest
 {
     public class ReservaSalaSucessoFaker
     {
+        private const int tentativasEntradaDados = 100;
+
         public static readonly string[] EntradaDadosExemploDaAvaliacao =
         {
             "26-05-2019;10:00;26-05-2019;12:00;10;Sim;Sim",
@@ -16,9 +19,16 @@ namespace Lemaf.UnitTest
             "26-05-2019;10:00;26-05-2019;12:00;10;Sim;Não"
         };
 
+        private static HistoricoReserva HistoricoReserva =
+            new HistoricoReserva()
+            {
+                InformacoesReservas = new List<string>(),
+                Reservas = new List<Reserva>()
+            };
+
         public static string GetFakerExemploDaAvaliacao()
         {
-            var historicoReserva = new HistoricoReserva()
+            HistoricoReserva = new HistoricoReserva()
             {
                 InformacoesReservas = new List<string> { "ok", "ok", "ok" },
                 Reservas = new List<Reserva>
@@ -29,28 +39,24 @@ namespace Lemaf.UnitTest
                 }
             };
 
-            return JsonConvert.SerializeObject(historicoReserva);
+            return JsonConvert.SerializeObject(HistoricoReserva);
         }
 
         public static string[] EntradaDadosSucesso {
-            get {
-                HistoricoReserva  historicoReserva= new HistoricoReserva(){
-                    InformacoesReservas = new List<string>(),
-                    Reservas = new List<Reserva>()
-                };
-
+            get
+            {
                 var entradaDados = new List<string>();
 
-                while(entradaDados.Count <= 50)
+                for (int i = 0; i < tentativasEntradaDados; i++)
                 {
-                    Reserva reserva = GerarReservaAleatoria(historicoReserva);
+                    Reserva reserva = GerarReservaAleatoria();
 
                     if (reserva != null)
                     {
-                        historicoReserva.Reservas.Add(reserva);
-                        historicoReserva.InformacoesReservas.Add("ok");
+                        HistoricoReserva.Reservas.Add(reserva);
+                        HistoricoReserva.InformacoesReservas.Add("ok");
 
-                        entradaDados.Add(ConverterReservaParaString(reserva.DataInicio, reserva.DataFim, reserva.QuantidadePessoas.Value,
+                        entradaDados.Add(ConverterReservaParaString(reserva.DataInicio, reserva.DataFinal, reserva.QuantidadePessoas,
                             reserva.Sala.PossuiInternet, reserva.Sala.PossuiTvWebcam));
                     }
                 }
@@ -59,46 +65,13 @@ namespace Lemaf.UnitTest
             }
         }
 
-        
-        public static string GetFakerSucesso(string[] EntradaDadosSucesso)
-        {
-            HistoricoReserva  historicoReserva= new HistoricoReserva(){
-                InformacoesReservas = new List<string>(),
-                Reservas = new List<Reserva>()
-            };
-
-            foreach (var item in EntradaDadosSucesso)
-            {
-                var entrada = item.Split(";");
-
-                var reserva = VerificarReserva(
-                    historicoReserva,
-                    DateTime.Parse(string.Concat(entrada[0], " ", entrada[1])),
-                    DateTime.Parse(string.Concat(entrada[2], " ", entrada[3])),
-                    Convert.ToInt32(entrada[4]),
-                    entrada[5].Equals("Sim") ? true : false,
-                    entrada[6].Equals("Sim") ? true : false
-                );
-
-                if (reserva != null)
-                {
-                    historicoReserva.Reservas.Add(reserva);
-                    historicoReserva.InformacoesReservas.Add("ok");
-                }
-            };
-
-            return JsonConvert.SerializeObject(historicoReserva);
-        }
-
-
-        private static Reserva GerarReservaAleatoria(HistoricoReserva historicoReserva)
+        private static Reserva GerarReservaAleatoria()
         {
             DateTime dataInicio = new Faker().Date.Between(DateTime.Now.AddDays(1).Date, DateTime.Now.AddDays(40));
             while (dataInicio.DayOfWeek.Equals(DayOfWeek.Sunday | DayOfWeek.Saturday))
                 dataInicio = new Faker().Date.Between(DateTime.Now.AddDays(1).Date, DateTime.Now.AddDays(40));
 
             return VerificarReserva(
-                historicoReserva,
                 dataInicio,
                 dataInicio.AddHours(new Faker().Random.Double(1, 8)),
                 new Faker().Random.Int(1, 20),
@@ -119,7 +92,7 @@ namespace Lemaf.UnitTest
         private static Reserva AdicionarReserva(DateTime dataInicio, DateTime dataFinal, int capacidade, Sala sala) => new Reserva
         {
             DataInicio = dataInicio,
-            DataFim = dataFinal,
+            DataFinal = dataFinal,
             QuantidadePessoas = capacidade,
             Sala = sala
         };
@@ -133,49 +106,38 @@ namespace Lemaf.UnitTest
             PossuiTvWebcam = tvWebcam
         };
 
-        private static Sala VerificarSalaDisponivel(HistoricoReserva historicoReserva, Reserva reserva, bool possuiInternet, bool possuiTvWebcam)
+        private static Reserva VerificarReserva(DateTime dataInicio, DateTime dataFinal, int quantidadePessoas,
+            bool possuiInternet, bool possuiTvWebcam)
+        {
+            Reserva reserva = AdicionarReserva(dataInicio, dataFinal, quantidadePessoas, null);
+
+            reserva.Sala = VerificarSalaDisponivel(reserva, possuiInternet, possuiTvWebcam);
+            
+            return (reserva.Sala == null) ? null : reserva;
+        }
+
+        private static Sala VerificarSalaDisponivel(Reserva reserva, bool possuiInternet, bool possuiTvWebcam)
         {
             var copiaReserva = reserva;
             var salasAtendem = new SalaService().
-                VerificarSalasAtendemNecessidade(copiaReserva.QuantidadePessoas.Value, possuiInternet, possuiTvWebcam);
+                VerificarSalasAtendemNecessidade(copiaReserva.QuantidadePessoas, possuiInternet, possuiTvWebcam);
 
             foreach (var sala in salasAtendem)
             {
                 copiaReserva.Sala = sala;
-                if (historicoReserva.Reservas == null)
-                    return sala;
-                else if (!historicoReserva.Reservas.Contains(copiaReserva))
+                 if (HistoricoReserva.Reservas.Equals(null) | !ConflitoHorario(copiaReserva) )
                     return sala;
             }
             return null;
         }
 
-        private static Reserva VerificarReserva(HistoricoReserva historicoReserva, DateTime dataInicio, DateTime dataFinal,
-            int quantidadePessoas, bool possuiInternet, bool possuiTvWebcam)
+        private static bool ConflitoHorario(Reserva reserva)
         {
-            Reserva reserva = AdicionarReserva(
-                    dataInicio,
-                    dataFinal,
-                    quantidadePessoas,
-                    null
-                );
+            var verificador = HistoricoReserva.Reservas
+                .Where(x => x.Sala.CodigoSala == reserva.Sala.CodigoSala & (x.DataInicio > reserva.DataFinal | reserva.DataInicio > x.DataFinal)
+            ).ToList();
 
-            var sala = VerificarSalaDisponivel(
-                historicoReserva,
-                reserva,
-                possuiInternet,
-                possuiTvWebcam
-            );
-            
-            if(sala == null)
-            {
-                return null;
-            }
-            else
-            {
-                reserva.Sala = sala;
-                return reserva;
-            }
+            return (verificador.Count.Equals(0)) ? false : true;
         }
     }
 }

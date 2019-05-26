@@ -169,6 +169,33 @@ namespace Lemaf.Services.Properties {
         }
         
         /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Quantidade de pessoas não pode ser nulo..
+        /// </summary>
+        public static string ErroQuantidadePessoas {
+            get {
+                return ResourceManager.GetString("ErroQuantidadePessoas", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a Quantidade de pessoas informado é insuficiente..
+        /// </summary>
+        public static string ErroQuantidadePessoasInsuficiente {
+            get {
+                return ResourceManager.GetString("ErroQuantidadePessoasInsuficiente", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta uma cadeia de caracteres localizada semelhante a As salas disponíveis acomodam no máximo 20 pessoas..
+        /// </summary>
+        public static string ErroQuantidadePessoasMaisQueSuficiente {
+            get {
+                return ResourceManager.GetString("ErroQuantidadePessoasMaisQueSuficiente", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Consulta uma cadeia de caracteres localizada semelhante a Não foi possível reservar uma sala..
         /// </summary>
         public static string ErroSala {

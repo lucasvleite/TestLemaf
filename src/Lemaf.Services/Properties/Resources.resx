@@ -153,6 +153,15 @@
   <data name="ErroPossuiTvWebcam" xml:space="preserve">
     <value>Verificador de TV e webcam não podem ser nulo.</value>
   </data>
+  <data name="ErroQuantidadePessoas" xml:space="preserve">
+    <value>Quantidade de pessoas não pode ser nulo.</value>
+  </data>
+  <data name="ErroQuantidadePessoasInsuficiente" xml:space="preserve">
+    <value>Quantidade de pessoas informado é insuficiente.</value>
+  </data>
+  <data name="ErroQuantidadePessoasMaisQueSuficiente" xml:space="preserve">
+    <value>As salas disponíveis acomodam no máximo 20 pessoas.</value>
+  </data>
   <data name="ErroSala" xml:space="preserve">
     <value>Não foi possível reservar uma sala.</value>
   </data>

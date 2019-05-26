@@ -1,33 +1,31 @@
 ﻿using Bogus;
 using Lemaf.Entities;
+using Lemaf.Services.Services;
+using Lemaf.Services.Validators;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lemaf.UnitTest
 {
     public class ReservaSalaFaker
     {
-        private int NumeroAleatorio => new Faker().Random.Int();
+        private static ReservaValidator validator = new ReservaValidator();
 
-        private static string DataAleatoria
+        public static readonly string[] EntradaDadosErroDataInicial =
         {
-            get { return new Faker().Date.Between(DateTime.Now.Date, DateTime.Now.AddDays(100)).ToString().Replace("/", "-").Replace(" ", ";"); }
-        }
-
-        private static Reserva AdicionarReserva(DateTime dataInicio, DateTime dataFinal, int capacidade, Sala sala) => new Reserva
-        {
-            DataInicio = dataInicio,
-            DataFim = dataFinal,
-            QuantidadePessoas = capacidade,
-            Sala = sala
+            "26-05-2019;10:00;26-05-2019;12:00;10;Sim;Sim",
+            "26-05-2018;10:00;26-05-2019;12:00;10;Sim;Sim",
+            "26-99-2019;10:00;26-05-2019;12:00;10;Sim;Não"
         };
 
-        private static Sala AdicionarSala(int codigoSala, int capacidade, bool internet, bool tvWebcam) => new Sala
+        public static readonly string[] EntradaDadosErroDataFinal =
         {
-            CodigoSala = codigoSala,
-            Capacidade = capacidade,
-            PossuiComputador = true,
-            PossuiInternet = internet,
-            PossuiTvWebcam = tvWebcam
+            "26-05-2019;10:00;26-05-2019;12:00;10;Sim;Sim",
+            "26-05-2019;10:00;26-05-2018;12:00;10;Sim;Sim",
+            "26-05-2019;10:00;26-99-2019;12:00;10;Sim;Não"
         };
     }
 }
