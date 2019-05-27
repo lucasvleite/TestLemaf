@@ -12,13 +12,16 @@
         </a>
     </div>
     <div class="col-6 text-right">
-        @Html.ActionLink("Download", "Download", "Home", htmlAttributes: new { @class = "btn btn-md btn-primary" });
+        <button class="btn btn-md btn-primary" onclick="Mudarestado('verJson')">Mostrar Json</button>
+    </div>
+    <div id="verJson" class="col-12" hidden>
+        <textarea class="form-control mt-4" rows="6">@Html.Raw(Json.Serialize(Model))</textarea>
     </div>
 </div>
 
 
-<table class="table mt-4">
-    <thead class="thead-light">
+<table class="table table-bordered table-hover table-sm mt-4">
+    <thead class="thead-dark">
         <tr>
             <th>Data Início</th>
             <th>Data Final</th>
@@ -34,7 +37,7 @@
         {
             @if (item.Informações.Equals("ok"))
             {
-                <tr class="bg-light">
+                <tr class="table-light">
                     <td>
                         @Html.DisplayFor(modelItem => item.DataInicio)
                     </td>
@@ -60,7 +63,7 @@
             }
             else
             {
-                <tr>
+                <tr class="table-white">
                     <td>
                         @Html.DisplayFor(modelItem => item.DataInicio)
                     </td>
@@ -73,3 +76,14 @@
         }
     </tbody>
 </table>
+
+<script>
+    function Mudarestado(el) {
+        var display = document.getElementById(el).hidden;
+        if (display)
+            document.getElementById(el).hidden = false;
+        else
+            document.getElementById(el).hidden = true;
+    }
+
+</script>

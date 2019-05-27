@@ -1,4 +1,3 @@
-using Lemaf.App.Controllers;
 using Lemaf.Entities;
 using Lemaf.Services.Interfaces;
 using Lemaf.Services.Services;
@@ -12,6 +11,7 @@ namespace Lemaf.UnitTest
 {
     public class ReservaSalaTest : IClassFixture<TestServerFixture>
     {
+        private const string Ok = "ok";
         private readonly TestServerFixture _fixture;
         private static IReservaService _service;
 
@@ -40,7 +40,7 @@ namespace Lemaf.UnitTest
             int i = 0;
             foreach (Reserva item in historico.Reservas)
             {
-                historico.InformacoesReservas.ElementAt(i).Equals("ok");
+                historico.InformacoesReservas.ElementAt(i).Equals(Ok);
                 Assert.NotNull(historico.Reservas.ElementAt(i));
 
                 i++;
@@ -59,9 +59,9 @@ namespace Lemaf.UnitTest
             foreach (Reserva item in historico.Reservas)
             {
                 if (item == (null))
-                    Assert.NotEqual("ok", historico.InformacoesReservas.ElementAt(i));
+                    Assert.NotEqual(Ok, historico.InformacoesReservas.ElementAt(i));
                 else
-                    historico.InformacoesReservas.ElementAt(i).Equals("ok");
+                    historico.InformacoesReservas.ElementAt(i).Equals(Ok);
 
                 i++;
             }
@@ -79,9 +79,9 @@ namespace Lemaf.UnitTest
             foreach (Reserva item in historico.Reservas)
             {
                 if (item == (null))
-                    Assert.NotEqual("ok", historico.InformacoesReservas.ElementAt(i));
+                    Assert.NotEqual(Ok, historico.InformacoesReservas.ElementAt(i));
                 else
-                    historico.InformacoesReservas.ElementAt(i).Equals("ok");
+                    historico.InformacoesReservas.ElementAt(i).Equals(Ok);
 
                 i++;
             }
@@ -99,9 +99,9 @@ namespace Lemaf.UnitTest
             foreach (Reserva item in historico.Reservas)
             {
                 if (item == (null))
-                    Assert.NotEqual("ok", historico.InformacoesReservas.ElementAt(i));
+                    Assert.NotEqual(Ok, historico.InformacoesReservas.ElementAt(i));
                 else
-                    historico.InformacoesReservas.ElementAt(i).Equals("ok");
+                    historico.InformacoesReservas.ElementAt(i).Equals(Ok);
 
                 i++;
             }

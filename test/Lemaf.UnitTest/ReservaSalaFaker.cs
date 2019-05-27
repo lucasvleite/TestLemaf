@@ -1,6 +1,4 @@
-﻿using Lemaf.Services.Validators;
-
-namespace Lemaf.UnitTest
+﻿namespace Lemaf.UnitTest
 {
     public class ReservaSalaFaker
     {

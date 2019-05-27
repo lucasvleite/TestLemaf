@@ -15,7 +15,6 @@ namespace Softplan.ACL.WebApi.UnitTest
             var builder = new WebHostBuilder()
                 .UseEnvironment("Test")
             .UseStartup<Startup>()
-            //.UseSetting("DATABASE_PROVIDER", "INMEMORY")
             ;
 
             _testServer = new TestServer(builder);

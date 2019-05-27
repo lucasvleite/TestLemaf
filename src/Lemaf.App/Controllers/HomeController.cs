@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Lemaf.App.Models;
+using Lemaf.Entities;
+using Lemaf.Services.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Lemaf.App.Models;
-using System.IO;
-using Microsoft.AspNetCore.Http;
-using Lemaf.Services.Services;
-using Newtonsoft.Json;
-using Lemaf.Entities;
 
 namespace Lemaf.App.Controllers
 {
@@ -48,21 +47,21 @@ namespace Lemaf.App.Controllers
                 return View("Index");
             }
 
-            var resultado = await EfetuarReservas(arquivo);
+            var reservas = await EfetuarReservas(arquivo);
 
-            return View(PreencherModel(resultado));
+            return View(PreencherModel(reservas));
         }
 
         private static async Task<string> EfetuarReservas(IFormFile arquivo)
         {
-            string PastaTemporaria = Path.GetTempFileName();
+            string pastaTemporaria = Path.GetTempFileName();
 
-            using (var stream = new FileStream(PastaTemporaria, FileMode.Create))
+            using (var stream = new FileStream(pastaTemporaria, FileMode.Create))
             {
                 await arquivo.CopyToAsync(stream);
             }
 
-            string[] leituraArquivo = System.IO.File.ReadAllLines(PastaTemporaria);
+            string[] leituraArquivo = System.IO.File.ReadAllLines(pastaTemporaria);
 
             return await new ReservaService().ReservarSalasAsync(leituraArquivo);
         }

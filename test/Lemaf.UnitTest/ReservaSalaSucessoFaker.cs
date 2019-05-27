@@ -1,9 +1,9 @@
 ﻿using Bogus;
 using Lemaf.Entities;
+using Lemaf.Services.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using Lemaf.Services.Services;
 using System.Linq;
 
 namespace Lemaf.UnitTest

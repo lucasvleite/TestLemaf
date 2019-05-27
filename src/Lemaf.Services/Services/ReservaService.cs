@@ -15,15 +15,16 @@ namespace Lemaf.Services.Services
         private const string Ok = "ok";
         private const string Sim = "Sim";
 
-        private static HistoricoReserva HistoricoReserva =
-            new HistoricoReserva()
+        private static HistoricoReserva HistoricoReserva;
+
+        public async Task<string> ReservarSalasAsync(string[] entradaDados)
+        {
+            HistoricoReserva = new HistoricoReserva()
             {
                 InformacoesReservas = new List<string>(),
                 Reservas = new List<Reserva>()
             };
 
-        public async Task<string> ReservarSalasAsync(string[] entradaDados)
-        {
             foreach (string item in entradaDados)
             {
                 string verificador = VerificarDados(item);
