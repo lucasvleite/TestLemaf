@@ -1,0 +1,75 @@
+﻿@model IEnumerable<Lemaf.App.Models.ReservasViewModel>
+
+@{
+    ViewData["Title"] = "ReservasView";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row mb-4">
+    <div class="col-6">
+        <a href="/" class="btn btn-md btn-primary">
+            <i class="fa fa-arrow-circle-left">Voltar</i>
+        </a>
+    </div>
+    <div class="col-6 text-right">
+        @Html.ActionLink("Download", "Download", "Home", htmlAttributes: new { @class = "btn btn-md btn-primary" });
+    </div>
+</div>
+
+
+<table class="table mt-4">
+    <thead class="thead-light">
+        <tr>
+            <th>Data Início</th>
+            <th>Data Final</th>
+            <th>Sala</th>
+            <th>Máximo Pessoas</th>
+            <th>Computador</th>
+            <th>Internet</th>
+            <th>Tv e Webcam</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            @if (item.Informações.Equals("ok"))
+            {
+                <tr class="bg-light">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DataInicio)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DataFinal)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.CodigoSala)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.Capacidade)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.PossuiComputador)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.PossuiInternet)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.PossuiTvWebcam)
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DataInicio)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DataFinal)
+                    </td>
+                    <td colspan="5">@item.Informações</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

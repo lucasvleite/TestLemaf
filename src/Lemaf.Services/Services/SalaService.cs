@@ -42,8 +42,8 @@ namespace Lemaf.Services.Services
         {
             var salasAtendem = Salas().Where(s =>
                 s.Capacidade >= quantidadePessoas &&
-                s.PossuiInternet.Equals(possuiInternet) &&
-                s.PossuiTvWebcam.Equals(possuiTvWebcam)).ToList();
+                (s.PossuiInternet | !possuiInternet) &&
+                (s.PossuiTvWebcam | !possuiTvWebcam)).ToList();
 
             return salasAtendem;
         }

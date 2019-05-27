@@ -22,7 +22,7 @@ namespace Lemaf.Services.Services
                 Reservas = new List<Reserva>()
             };
 
-        public async Task<string> ReservarSalas(string[] entradaDados)
+        public async Task<string> ReservarSalasAsync(string[] entradaDados)
         {
             foreach (string item in entradaDados)
             {
@@ -31,7 +31,7 @@ namespace Lemaf.Services.Services
                 if (verificador.Equals(Ok))
                     await EfetuarReservaAsync(item.Split(";"));
                 else
-                    AdicionarHistoricoReserva(verificador, null);
+                    AdicionarHistoricoReserva(verificador, new Reserva());
             }
 
             return JsonConvert.SerializeObject(HistoricoReserva);
@@ -73,15 +73,17 @@ namespace Lemaf.Services.Services
                     tentativaReserva,
                     dados[5].Equals(Sim) ? true : false,
                     dados[6].Equals(Sim) ? true : false);
-                
-                if(tentativaReserva.Sala == null)
-                    AdicionarHistoricoReserva(informacoesReserva, null);
+
+                if (tentativaReserva.Sala == null)
+                    AdicionarHistoricoReserva( SugerirTresDatas (
+                        tentativaReserva, dados[5].Equals(Sim) ? true : false, dados[6].Equals(Sim) ? true : false),
+                    tentativaReserva);
                 else
                     AdicionarHistoricoReserva(informacoesReserva, tentativaReserva);
             }
             else
             {
-                AdicionarHistoricoReserva(informacoesReserva, null);
+                AdicionarHistoricoReserva(informacoesReserva, new Reserva());
             }
         }
 
@@ -106,7 +108,6 @@ namespace Lemaf.Services.Services
             return null;
         }
 
-        //TODO: Arrumar erros - verificar tres outras salas.
         private async Task<string> VerificarRegras(Reserva reserva)
         {
             var validador = await validator.ValidateAsync(reserva);
@@ -123,19 +124,59 @@ namespace Lemaf.Services.Services
         private bool ConflitoHorario(Reserva reserva)
         {
             var verificador = HistoricoReserva.Reservas
-                .Where(x => x.Sala.CodigoSala == reserva.Sala.CodigoSala & (x.DataInicio > reserva.DataFinal | reserva.DataInicio > x.DataFinal)
+                .Where(x =>
+                    x.Sala?.CodigoSala == reserva.Sala.CodigoSala &
+                    (x.DataInicio > reserva.DataFinal |
+                    reserva.DataInicio > x.DataFinal)
             ).ToList();
 
             return (verificador.Count.Equals(0)) ? false : true;
         }
 
-        private static Reserva NovaReserva(DateTime dataInicio, DateTime dataFinal, int quantidadePessoas, Sala sala) =>
-            new Reserva
+        private string SugerirTresDatas(Reserva tentativaReserva, bool possuiInternet, bool possuiTvWebcam)
+        {
+            string sugestao = string.Concat(
+                AcharSalaParaMaisCedo(tentativaReserva, possuiInternet, possuiTvWebcam),
+                AcharSalaParaMaisTarde(tentativaReserva, possuiInternet, possuiTvWebcam),
+                AcharSalaParaMaisTarde(tentativaReserva, possuiInternet, possuiTvWebcam)
+            );
+            return sugestao;
+        }
+
+        private string AcharSalaParaMaisTarde(Reserva tentativaReserva, bool possuiInternet, bool possuiTvWebcam)
+        {
+            Sala sala = null;
+
+            while (sala.Equals(null) & tentativaReserva.DataInicio < DateTime.Now.AddDays(40))
             {
-                DataInicio = dataInicio,
-                DataFinal = dataFinal,
-                QuantidadePessoas = quantidadePessoas,
-                Sala = sala
-            };
+                if (tentativaReserva.DataInicio.Hour > 6 | tentativaReserva.DataInicio.Hour < 21)
+                {
+                    tentativaReserva.DataInicio.AddHours(1);
+                    tentativaReserva.DataFinal.AddHours(1);
+                    sala = VerificarSalaDisponivel(tentativaReserva, possuiInternet, possuiTvWebcam);
+                }
+            }
+
+            return sala.Equals(null) ? "" :
+                string.Concat("A sala ", sala.CodigoSala, " esta disponível de ", tentativaReserva.DataInicio, " até ", tentativaReserva.DataFinal);
+        }
+
+        private string AcharSalaParaMaisCedo(Reserva tentativaReserva, bool possuiInternet, bool possuiTvWebcam)
+        {
+            Sala sala = null;
+
+            while (sala.Equals(null) & tentativaReserva.DataInicio > DateTime.Now.AddDays(1))
+            {
+                if (tentativaReserva.DataInicio.Hour > 6 | tentativaReserva.DataInicio.Hour < 21)
+                {
+                    tentativaReserva.DataInicio.AddHours(-1);
+                    tentativaReserva.DataFinal.AddHours(-1);
+                    sala = VerificarSalaDisponivel(tentativaReserva, possuiInternet, possuiTvWebcam);
+                }
+            }
+
+            return sala.Equals(null) ? "" :
+                string.Concat("A sala ", sala.CodigoSala, " esta disponível de ", tentativaReserva.DataInicio, " até ", tentativaReserva.DataFinal);
+        }
     }
 }

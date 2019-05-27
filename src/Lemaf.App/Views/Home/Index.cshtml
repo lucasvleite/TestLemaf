@@ -3,14 +3,23 @@
 }
 
 <div class="text-center">
-    @using (Html.BeginForm("InputFile", "Home", FormMethod.Post, new { id = "formInput", @class = "md-form" }))
+    @using (Html.BeginForm("Reservas", "Home", FormMethod.Post, new { enctype = "multipart/form-data", @class = "md-form" }))
     {
-        <div class="row mt-5">
+        @if (ViewData["Erro"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Erro!</strong> @ViewData["Erro"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        <div class="row mt-4">
             <div class="col-12">
                 <br /><br /><br />
                 <div class="form-group">
                     <div class="btn btn-lg bg-light">
-                        <input type="file" class="form-control-file text-black-50" id="inputFile" lang="pt-br">
+                        <input type="file" name="inputFile" class="form-control-file text-black-50" id="inputFile" lang="pt-br">
                     </div>
                 </div>
             </div>
